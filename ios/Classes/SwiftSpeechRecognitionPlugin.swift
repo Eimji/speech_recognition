@@ -14,6 +14,7 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
   private let speechRecognizerEn = SFSpeechRecognizer(locale: Locale(identifier: "en_US"))!
   private let speechRecognizerRu = SFSpeechRecognizer(locale: Locale(identifier: "ru_RU"))!
   private let speechRecognizerIt = SFSpeechRecognizer(locale: Locale(identifier: "it_IT"))!
+  private let speechRecognizerEs = SFSpeechRecognizer(locale: Locale(identifier: "es_ES"))!
 
   private var speechChannel: FlutterMethodChannel?
 
@@ -49,13 +50,14 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     speechRecognizerEn.delegate = self
     speechRecognizerRu.delegate = self
     speechRecognizerIt.delegate = self
+    speechRecognizerEs.delegate = self
 
     SFSpeechRecognizer.requestAuthorization { authStatus in
       OperationQueue.main.addOperation {
         switch authStatus {
         case .authorized:
           result(true)
-          self.speechChannel?.invokeMethod("speech.onCurrentLocale", arguments: Locale.preferredLanguages.first)
+          self.speechChannel?.invokeMethod("speech.onCurrentLocale", arguments: "\(Locale.current.identifier)")
 
         case .denied:
           result(false)
@@ -106,16 +108,14 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
     cancelRecognition(result: nil)
 
     let audioSession = AVAudioSession.sharedInstance()
-    try audioSession.setCategory(AVAudioSessionCategoryRecord)
-    try audioSession.setMode(AVAudioSessionModeMeasurement)
-    try audioSession.setActive(true, with: .notifyOthersOnDeactivation)
+    try audioSession.setCategory(AVAudioSession.Category.record, mode: .default)
+    try audioSession.setMode(AVAudioSession.Mode.measurement)
+    try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
     recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
 
-    /*guard let inputNode = audioEngine.inputNode else {
-      fatalError("Audio engine has no input node")
-    }*/
     let inputNode = audioEngine.inputNode
+    
     guard let recognitionRequest = recognitionRequest else {
       fatalError("Unable to created a SFSpeechAudioBufferRecognitionRequest object")
     }
@@ -169,16 +169,19 @@ public class SwiftSpeechRecognitionPlugin: NSObject, FlutterPlugin, SFSpeechReco
       return speechRecognizerRu
     case "it_IT":
       return speechRecognizerIt
+    case "es_ES":
+        return speechRecognizerEs
     default:
       return speechRecognizerFr
     }
   }
 
   public func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
-    if available {
-      speechChannel?.invokeMethod("speech.onSpeechAvailability", arguments: true)
-    } else {
-      speechChannel?.invokeMethod("speech.onSpeechAvailability", arguments: false)
-    }
+    speechChannel?.invokeMethod("speech.onSpeechAvailability", arguments: available)
   }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVAudioSessionCategory(_ input: AVAudioSession.Category) -> String {
+	return input.rawValue
 }

@@ -24,11 +24,11 @@ class SpeechRecognition {
   StringResultHandler currentLocaleHandler;
   StringResultHandler recognitionResultHandler;
 
-  VoidCallback recognitionErrorHandler;
-
   VoidCallback recognitionStartedHandler;
 
-  VoidCallback recognitionCompleteHandler;
+  StringResultHandler recognitionCompleteHandler;
+  
+  VoidCallback errorHandler;
 
   /// ask for speech  recognizer permission
   Future activate() => _channel.invokeMethod("speech.activate");
@@ -39,8 +39,10 @@ class SpeechRecognition {
     return _channel.invokeMethod("speech.listen", locale);
   }
 
+  /// cancel speech
   Future cancel() => _channel.invokeMethod("speech.cancel");
-
+  
+  /// stop listening
   Future stop() => _channel.invokeMethod("speech.stop");
 
   Future _platformCallHandler(MethodCall call) async {
@@ -59,10 +61,10 @@ class SpeechRecognition {
         recognitionStartedHandler();
         break;
       case "speech.onRecognitionComplete":
-        recognitionCompleteHandler();
+        recognitionCompleteHandler(call.arguments);
         break;
       case "speech.onError":
-        recognitionErrorHandler();
+        errorHandler();
         break;
       default:
         print('Unknowm method ${call.method} ');
@@ -77,18 +79,16 @@ class SpeechRecognition {
   void setRecognitionResultHandler(StringResultHandler handler) =>
       recognitionResultHandler = handler;
 
-  // define a method to handle recognition error
-  void setRecognitionErrorHandler(VoidCallback handler) =>
-      recognitionErrorHandler = handler;
-
   // define a method to handle native call
   void setRecognitionStartedHandler(VoidCallback handler) =>
       recognitionStartedHandler = handler;
 
   // define a method to handle native call
-  void setRecognitionCompleteHandler(VoidCallback handler) =>
+  void setRecognitionCompleteHandler(StringResultHandler handler) =>
       recognitionCompleteHandler = handler;
 
   void setCurrentLocaleHandler(StringResultHandler handler) =>
       currentLocaleHandler = handler;
+  
+  void setErrorHandler(VoidCallback handler) => errorHandler = handler;
 }
