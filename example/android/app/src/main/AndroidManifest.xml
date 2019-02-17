@@ -1,7 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="bz.rxla.flutter.speechrecognitionexample"
-    android:versionCode="1"
-    android:versionName="0.0.1">
+    package="bz.rxla.flutter.speechrecognitionexample">
 
     <!-- The INTERNET permission is required for development. Specifically,
          flutter needs it to communicate with the running application
