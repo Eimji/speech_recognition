@@ -27,26 +27,26 @@ class SpeechRecognition {
   VoidCallback recognitionStartedHandler;
 
   StringResultHandler recognitionCompleteHandler;
-  
+
   VoidCallback errorHandler;
 
   /// ask for speech  recognizer permission
   Future activate() => _channel.invokeMethod("speech.activate");
 
   /// start listening
-  Future listen({String locale: 'en_UK'}) { 
+  Future listen({String locale: 'en_UK'}) {
     assert(locale != null);
     return _channel.invokeMethod("speech.listen", locale);
   }
 
   /// cancel speech
   Future cancel() => _channel.invokeMethod("speech.cancel");
-  
+
   /// stop listening
   Future stop() => _channel.invokeMethod("speech.stop");
 
   Future _platformCallHandler(MethodCall call) async {
-    print("_platformCallHandler call ${call.method} ${call.arguments}");
+    //print("_platformCallHandler call ${call.method} ${call.arguments}");
     switch (call.method) {
       case "speech.onSpeechAvailability":
         availabilityHandler(call.arguments);
@@ -89,6 +89,6 @@ class SpeechRecognition {
 
   void setCurrentLocaleHandler(StringResultHandler handler) =>
       currentLocaleHandler = handler;
-  
+
   void setErrorHandler(VoidCallback handler) => errorHandler = handler;
 }
